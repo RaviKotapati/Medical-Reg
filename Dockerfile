@@ -1,14 +1,5 @@
-# Use official OpenJDK base image
 FROM openjdk:17-jdk-slim
-
-# Set the working directory
 WORKDIR /app
-
-# Copy the built JAR file into the image
-COPY target/medical-register.jar app.jar
-
-# Expose the application port (change if needed)
+COPY build/libs/medical-register-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8001
-
-# Start the Spring Boot app
 ENTRYPOINT ["java", "-jar", "app.jar"]
