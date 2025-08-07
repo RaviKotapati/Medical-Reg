@@ -45,6 +45,8 @@ public class IdentityController {
 		try {
 			authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 		} catch (Exception e) {
+			System.out.println("EXCEPTION at TOKEN **************************************"+e.getMessage());
+			e.printStackTrace();
 			return EntityResponse.generateResponse("Authentication", HttpStatus.UNAUTHORIZED,
 					"Invalid credentials, please check details and try again.");
 		}
