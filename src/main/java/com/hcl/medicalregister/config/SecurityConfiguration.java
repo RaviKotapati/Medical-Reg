@@ -84,7 +84,7 @@ public class SecurityConfiguration {
         return httpSecurity.build();
     }
 
-    @Bean
+    /*@Bean
     public SecurityFilterChain securityFilterChainGlobalUserProfileAPI(HttpSecurity httpSecurity) throws Exception {
         sharedSecurityConfiguration(httpSecurity);
         httpSecurity.securityMatcher("user/profile").authorizeHttpRequests(auth -> {
@@ -93,7 +93,7 @@ public class SecurityConfiguration {
         }).addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
-    }
+    }*/
     @Bean
     public SecurityFilterChain securityFilterChainLoginAPI(HttpSecurity httpSecurity) throws Exception {
         sharedSecurityConfiguration(httpSecurity);
