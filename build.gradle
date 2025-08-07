@@ -15,6 +15,7 @@ repositories {
     mavenCentral()
 }
 
+
 dependencies {
     // JWT
 
@@ -47,9 +48,14 @@ dependencies {
 
     implementation 'org.joinfaces:faces-spring-boot-starter:5.4.3'
     implementation 'org.joinfaces:primefaces-spring-boot-starter:5.4.3'
-    implementation 'org.joinfaces:omnifaces-spring-boot-starter:5.4.3'
+    //implementation 'org.joinfaces:omnifaces-spring-boot-starter:5.4.3'
     implementation 'org.hibernate.validator:hibernate-validator'
     implementation 'org.glassfish:jakarta.faces:4.0.1'
+
+    implementation('org.joinfaces:faces-spring-boot-starter:5.4.3') {
+        exclude group: 'org.joinfaces', module: 'omnifaces-spring-boot-starter'
+    }
+
 
     // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
