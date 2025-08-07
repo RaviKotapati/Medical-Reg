@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Medical Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-grid td {
+            padding: 10px;
+        }
+
+        input[type="text"], input[type="email"], input[type="date"], input[type="password"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .button {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .button input {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .button input:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e9ecef;
+        }
+
+        .label-col {
+            width: 30%;
+            text-align: right;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+
+        .input-col {
+            width: 70%;
+        }
+    </style>
+
+</h:head>
+
+<h:body>
+    <div class="container">
+        <h1>Medical Register</h1>
+
+        <!-- Login Section -->
+        <h2>Login</h2>
+        <div class="form-grid">
+            <table>
+                <tr>
+                    <td class="label-col">Username:</td>
+                    <td class="input-col"><input type="text" id="login-username" /></td>
+                </tr>
+                <tr>
+                    <td class="label-col">Password:</td>
+                    <td class="input-col"><input type="password" id="login-password" /></td>
+                </tr>
+            </table>
+            <div class="button">
+                <input type="button" value="Login" onclick="loginAndRedirect()" />
+            </div>
+        </div>
+
+     </div>
+    <script>
+        function loginAndRedirect() {
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
+
+            fetch('/identity/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error("Login failed");
+                    return response.json();
+                })
+                .then(data => {
+                    const token = data.Data?.token;
+                    const refresh = data.Data?.refresh;
+
+                    if (!token) throw new Error("Token missing in response");
+
+                    localStorage.setItem("jwt", token);
+                    localStorage.setItem("refresh", refresh);
+
+                    // Navigate to patientInfo.xhtml after login
+                    window.location.href = 'patientInfo.xhtml';
+                })
+                .catch(err => {
+                    alert("Login failed: " + err.message);
+                });
+        }
+    </script>
+</h:body>
+</html>
