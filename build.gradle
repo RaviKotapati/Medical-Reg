@@ -3,6 +3,12 @@ plugins {
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.4'
 }
+bootJar {
+    dependsOn processResources
+    from('src/main/webapp') {
+        into 'META-INF/resources'  // Required for JSF to find .xhtml files
+    }
+}
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
