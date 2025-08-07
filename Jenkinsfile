@@ -8,7 +8,7 @@ pipeline {
     }
 
     stages {
-        stage('Clone Code') {
+        stage('Checkout') {
             steps {
                 git 'https://github.com/RaviKotapati/Medical-Reg.git'
             }
@@ -16,7 +16,7 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                bat 'mvn clean package -DskipTests'
+                bat 'gradlew.bat clean build -x test'
             }
         }
 
