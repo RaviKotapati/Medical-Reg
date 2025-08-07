@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "medical-register"
         CONTAINER_NAME = "medical-register"
-        APP_PORT = "8001"
+        APP_PORT = "8081"
     }
 
     stages {
