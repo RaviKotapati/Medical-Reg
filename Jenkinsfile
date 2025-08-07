@@ -14,9 +14,20 @@ pipeline {
             }
         }
 
-        stage('Build JAR') {
+        stage('Build JAR (Gradle)') {
             steps {
                 bat 'gradlew.bat clean build -x test'
+            }
+        }
+
+        stage('Debug: Show Workspace & JAR') {
+            steps {
+                bat '''
+                echo ===== Current Workspace =====
+                echo %CD%
+                echo ===== Contents of build/libs =====
+                dir build\\libs
+                '''
             }
         }
 
