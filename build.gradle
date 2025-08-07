@@ -17,16 +17,13 @@ repositories {
 
 
 dependencies {
-    // JWT
-
-
     // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-ldap'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    // Oracle JDBC Driver (must be installed manually or via custom repo)
+    // Oracle JDBC Driver
     implementation 'com.oracle.database.jdbc:ojdbc11:23.8.0.25.04'
 
     // Spring LDAP
@@ -35,8 +32,6 @@ dependencies {
     // DevTools
     runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 
-
-
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -44,21 +39,19 @@ dependencies {
     // JAXB
     implementation 'javax.xml.bind:jaxb-api:2.3.0'
 
-    implementation("io.jsonwebtoken:jjwt:0.2")
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt:0.2'
 
+    // JSF / JoinFaces
     implementation 'org.joinfaces:faces-spring-boot-starter:5.4.3'
     implementation 'org.joinfaces:primefaces-spring-boot-starter:5.4.3'
-    //implementation 'org.joinfaces:omnifaces-spring-boot-starter:5.4.3'
+    implementation 'org.omnifaces:omnifaces:4.0.1' // ✅ Explicitly added
     implementation 'org.hibernate.validator:hibernate-validator'
     implementation 'org.glassfish:jakarta.faces:4.0.1'
-
-    implementation('org.joinfaces:faces-spring-boot-starter:5.4.3') {
-        exclude group: 'org.joinfaces', module: 'omnifaces-spring-boot-starter'
-    }
-
 
     // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 }
+
 
