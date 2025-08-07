@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Medical Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-grid td {
+            padding: 10px;
+        }
+
+        input[type="text"], input[type="email"], input[type="date"], input[type="password"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .button {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .button input {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .button input:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e9ecef;
+        }
+
+        .label-col {
+            width: 30%;
+            text-align: right;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+
+        .input-col {
+            width: 70%;
+        }
+    </style>
+</h:head>
+
+<h:body>
+    <div class="container">
+        <h1>Medical Register</h1>
+
+        <!-- Patient Form (JS-controlled only) -->
+        <h2>New Patient</h2>
+        <table class="form-grid">
+            <tr>
+                <td class="label-col">Name:</td>
+                <td class="input-col"><input type="text" id="name" /></td>
+            </tr>
+            <tr>
+                <td class="label-col">Age:</td>
+                <td class="input-col"><input type="text" id="age" /></td>
+            </tr>
+            <tr>
+                <td class="label-col">Gender:</td>
+                <td class="input-col">
+                    <select id="gender">
+                        <option value="">Select</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col">Address:</td>
+                <td class="input-col"><textarea id="address" rows="2"></textarea></td>
+            </tr>
+            <tr>
+                <td class="label-col">Blood Group:</td>
+                <td class="input-col">
+                    <select id="bloodGroup">
+                        <option value="">Select</option>
+                        <option>A+</option><option>A-</option>
+                        <option>B+</option><option>B-</option>
+                        <option>AB+</option><option>AB-</option>
+                        <option>O+</option><option>O-</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col">Medical History:</td>
+                <td class="input-col"><textarea id="medicalHistory" rows="3"></textarea></td>
+            </tr>
+        </table>
+        <div class="button">
+            <input type="button" value="Save" onclick="savePatientWithJwt()" />
+        </div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            loadPatients();
+        }
+        function loadPatients() {
+
+            const token = getJwtToken();
+            if (!token) return;
+
+            fetch('/patients', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("patientTableBody");
+                    tbody.innerHTML = "";
+
+
+                })
+                .catch(err => {
+                    alert("Failed to load patients: " + err.message);
+                });
+        }
+        function savePatientWithJwt() {
+            const token = localStorage.getItem("jwt");
+            if (!token) {
+                alert("JWT not found. Please login first.");
+                return;
+            }
+
+            const patient = {
+                name: document.getElementById("name").value,
+                age: document.getElementById("age").value,
+                gender: document.getElementById("gender").value,
+                address: document.getElementById("address").value,
+                bloodGroup: document.getElementById("bloodGroup").value,
+                medicalHistory: document.getElementById("medicalHistory").value
+            };
+
+            fetch('/patient/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(patient)
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("Save failed");
+                    return res.json();
+                })
+                .then(data => {
+                    alert("Patient saved successfully.");
+                })
+                .catch(err => {
+                    alert("Error saving patient: " + err.message);
+                });
+        }
+    </script>
+</h:body>
+</html>
