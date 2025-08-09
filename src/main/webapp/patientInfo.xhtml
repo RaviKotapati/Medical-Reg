@@ -14,7 +14,7 @@
         }
 
         .container {
-            width: 800px;
+            width: 1000px;
             margin: 50px auto;
             background-color: #fff;
             padding: 30px;
@@ -93,6 +93,7 @@
 
         <!-- Patient Form (JS-controlled only) -->
         <h2>New Patient</h2>
+        <input type="hidden" id="id"/>
         <table class="form-grid">
             <tr>
                 <td class="label-col">Name:</td>
@@ -137,6 +138,18 @@
         <div class="button">
             <input type="button" value="Save" onclick="savePatientWithJwt()" />
         </div>
+
+        <h2>Patient Details</h2>
+        <table class="form-grid">
+            <thead>
+            <tr>
+                <th>Name</th><th>Age</th><th>Gender</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="patientTableBody"></tbody>
+        </table>
+
     </div>
 
     <script>
@@ -145,8 +158,11 @@
         }
         function loadPatients() {
 
-            const token = getJwtToken();
-            if (!token) return;
+            const token = localStorage.getItem("jwt");
+            if (!token) {
+                alert("JWT not found. Please login first.");
+                return;
+            }
 
             fetch('/patients', {
                 method: 'GET',
@@ -154,17 +170,65 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error("HTTP status " + res.status);
+                    }
+                    return res.json();
+                })
                 .then(data => {
+                    console.log("Received data:", data);  // ✅ Debug the response
+
+                    if (!Array.isArray(data)) {
+                        alert("Unexpected response (not an array): " + JSON.stringify(data));
+                        return;
+                    }
+
                     const tbody = document.getElementById("patientTableBody");
                     tbody.innerHTML = "";
 
+                    data.forEach(p => {
+                        const row = document.createElement('tr');
+
+                        const tdId = document.createElement('td');
+                        tdId.textContent = p.name;
+                        row.appendChild(tdId);
+
+                        const tdName = document.createElement('td');
+                        tdName.textContent = p.age;
+                        row.appendChild(tdName);
+
+                        const tdAge = document.createElement('td');
+                        tdAge.textContent = p.gender;
+                        row.appendChild(tdAge);
+
+                        // Edit Button
+                        const tdBtn = document.createElement('td');
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Edit';
+                        editBtn.className = 'styled-btn';
+                        editBtn.onclick = () => editPatient(p);
+                        tdBtn.appendChild(editBtn);
+                        row.appendChild(tdBtn);
+
+                        // Delete Button
+                        //const tdDelete = document.createElement('td');
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.className = 'styled-btn';
+                        deleteBtn.onclick = () => deletePatient(p.id);
+                        tdBtn.appendChild(deleteBtn);
+                        row.appendChild(tdBtn);
+
+                        tbody.appendChild(row);
+                    });
 
                 })
                 .catch(err => {
                     alert("Failed to load patients: " + err.message);
                 });
         }
+
         function savePatientWithJwt() {
             const token = localStorage.getItem("jwt");
             if (!token) {
@@ -173,6 +237,7 @@
             }
 
             const patient = {
+                id: document.getElementById("id").value,
                 name: document.getElementById("name").value,
                 age: document.getElementById("age").value,
                 gender: document.getElementById("gender").value,
@@ -193,13 +258,59 @@
                     if (!res.ok) throw new Error("Save failed");
                     return res.json();
                 })
-                .then(data => {
-                    alert("Patient saved successfully.");
+               .then(data => {
+                   loadPatients();
                 })
                 .catch(err => {
                     alert("Error saving patient: " + err.message);
                 });
+
         }
+
+
+        function deletePatient(patientId) {
+
+            const token = localStorage.getItem("jwt");
+            if (!token) {
+                alert("JWT not found. Please login first.");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to delete this patient?")) {
+                return;
+            }
+
+            fetch('/delete/'+patientId, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("Delete failed");
+                    loadPatients();  // refresh the table
+                })
+                .catch(err => {
+                    alert("Error deleting patient: " + err.message);
+                });
+        }
+
+
+        function editPatient(patient) {
+            document.getElementById("id").value = patient.id || 0;
+            document.getElementById("name").value = patient.name || "";
+            document.getElementById("age").value = patient.age || "";
+            document.getElementById("gender").value = patient.gender || "";
+            document.getElementById("address").value = patient.address || "";
+            document.getElementById("bloodGroup").value = patient.bloodGroup || "";
+            document.getElementById("medicalHistory").value = patient.medicalHistory || "";
+
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+
     </script>
+
 </h:body>
 </html>

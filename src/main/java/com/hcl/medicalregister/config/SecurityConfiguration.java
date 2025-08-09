@@ -1,19 +1,16 @@
 package com.hcl.medicalregister.config;
 
-
+import com.hcl.medicalregister.security.JWTRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.authentication.configuration.GlobalAuthenticationConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,112 +18,50 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 
-import com.hcl.medicalregister.security.JWTRequestFilter;
-
-import java.util.*;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
 
     @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
     private JWTRequestFilter jwtRequestFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new MessageDigestPasswordEncoder("MD5");
-
+        return NoOpPasswordEncoder.getInstance();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig,PasswordEncoder passwordEncoder) throws Exception {
-        final List<GlobalAuthenticationConfigurerAdapter> configurers = new ArrayList<>();
-        configurers.add(new GlobalAuthenticationConfigurerAdapter() {
-            @Override
-            public void configure(AuthenticationManagerBuilder auth) throws Exception {
-                auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-            }
-        });
-        return authConfig.getAuthenticationManager();
-    }
-
-    private void sharedSecurityConfiguration(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf(AbstractHttpConfigurer::disable).cors().configurationSource(corsConfigurationSource()).and()
-                .sessionManagement(httpSecuritySessionManagementConfigurer -> {
-                    httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                });
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChainGlobalAPI(HttpSecurity httpSecurity) throws Exception {
-        sharedSecurityConfiguration(httpSecurity);
-        httpSecurity.securityMatcher("user", "admin").authorizeHttpRequests(auth -> {
-            auth.anyRequest().authenticated();
-        }).addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/identity/token", "/home", "/patientInfo.xhtml","/login.xhtml", "/javax.faces.resource/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return httpSecurity.build();
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChainGlobalAdminAPI(HttpSecurity httpSecurity) throws Exception {
-        sharedSecurityConfiguration(httpSecurity);
-        httpSecurity.securityMatcher("admin/**").authorizeHttpRequests(auth -> {
-            auth.anyRequest()
-                    .hasRole("ADMIN");
-        }).addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return httpSecurity.build();
-    }
-
-    /*@Bean
-    public SecurityFilterChain securityFilterChainGlobalUserProfileAPI(HttpSecurity httpSecurity) throws Exception {
-        sharedSecurityConfiguration(httpSecurity);
-        httpSecurity.securityMatcher("user/profile").authorizeHttpRequests(auth -> {
-            auth.anyRequest()
-                    .hasRole("USER");
-        }).addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return httpSecurity.build();
-    }*/
-    @Bean
-    public SecurityFilterChain securityFilterChainLoginAPI(HttpSecurity httpSecurity) throws Exception {
-        sharedSecurityConfiguration(httpSecurity);
-        httpSecurity.securityMatcher("/user/authenticate").authorizeHttpRequests(auth -> {
-            auth.anyRequest().permitAll();
-        }).addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return httpSecurity.build();
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChainRegisterAPI(HttpSecurity httpSecurity) throws Exception {
-        sharedSecurityConfiguration(httpSecurity);
-        httpSecurity.securityMatcher("/user/register").authorizeHttpRequests(auth -> {
-            auth.anyRequest().permitAll();
-        }).addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return httpSecurity.build();
+        return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        final CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Collections.singletonList("*")); // Allow all origins
+        config.setAllowedMethods(Collections.singletonList("*")); // Allow all HTTP methods
+        config.setAllowedHeaders(Collections.singletonList("*")); // Allow all headers
 
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
-        configuration.setAllowedMethods(Collections.singletonList("*"));
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-
-        configuration.addAllowedOrigin("*");
-        configuration.addAllowedHeader("*");
-        configuration.addAllowedMethod("*");
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
 
         return source;
     }

@@ -128,7 +128,6 @@
                 .then(data => {
                     const token = data.Data?.token;
                     const refresh = data.Data?.refresh;
-
                     if (!token) throw new Error("Token missing in response");
 
                     localStorage.setItem("jwt", token);

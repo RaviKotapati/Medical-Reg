@@ -20,7 +20,9 @@ java {
 repositories {
     mavenCentral()
 }
-
+test {
+    useJUnitPlatform()
+}
 
 dependencies {
     // Spring Boot Starters
@@ -55,9 +57,20 @@ dependencies {
     implementation 'org.hibernate.validator:hibernate-validator'
     implementation 'org.glassfish:jakarta.faces:4.0.1'
 
-    // Test dependencies
+
+    // Spring Boot Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Spring Security Test
     testImplementation 'org.springframework.security:spring-security-test'
+
+    // Mockito Core (Optional, already included in spring-boot-starter-test)
+    testImplementation 'org.mockito:mockito-core'
+
+    // JUnit Jupiter (Optional, already included in spring-boot-starter-test)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
 }
 
 
